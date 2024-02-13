@@ -26,7 +26,7 @@ const BarbershopItem = ({ barbershop }: BarbershopItemProps) => {
             sizes="100vw"
             fill
             className="rounded-2xl"
-            objectFit="cover"
+            style={{objectFit: 'cover'}}
           />
         </div>
         <div className="px-2 pb-2">

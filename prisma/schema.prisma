@@ -33,6 +33,7 @@ model Service {
   barbershop   Barbershop @relation(fields: [barbershopId], references: [id]) //não é salvo no banco, apenas cria uma relação do barbershop com o service, armazenando a referência do id do model barbershop no campo barbershopId do service
   description  String
   Booking      Booking[]
+  imageUrl     String
 }
 
 model Booking {

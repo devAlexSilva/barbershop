@@ -1,5 +1,6 @@
 'use client'
 
+import SideMenu from '@/app/components/SideMenu'
 import { Button } from '@/app/components/ui/button'
 import { Barbershop } from '@prisma/client'
 import { ChevronLeftIcon, MapPinIcon, MenuIcon, StarIcon } from 'lucide-react'
@@ -22,7 +23,7 @@ const BarbershopInfo = ({ barbershop }: barbershopProps) => {
       <div className="h-[250px] w-full relative">
         <div className="absolute inset-0 z-10 flex justify-between py-3 px-5">
           <Button onClick={handleClickToBack} size='icon' variant='outline'><ChevronLeftIcon /></Button>
-          <Button size='icon' variant='outline'><MenuIcon /></Button>
+          <SideMenu />
         </div>
         <Image
           src={barbershop.imageUrl}

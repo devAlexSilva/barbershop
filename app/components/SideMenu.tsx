@@ -64,7 +64,7 @@ const SideMenu = () => {
           </Button>
 
           {status === 'authenticated' && data.user ? (
-            <Button variant='outline' className="justify-start" asChild> {/*transform our child on parent element -- to html semantic best practices */}
+            <Button variant='outline' className="justify-start" asChild>
               <Link href='/bookings'>
                 <CalendarIcon size={18} className="mr-2" />
                 Agendamentos

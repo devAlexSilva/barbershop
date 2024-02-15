@@ -6,25 +6,53 @@ import { Card, CardContent } from "@/app/components/ui/card"
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/app/components/ui/sheet"
 import { Barbershop, Service } from "@prisma/client"
 import { ptBR } from "date-fns/locale/pt-BR"
-import { signIn } from "next-auth/react"
+import { signIn, useSession } from "next-auth/react"
 import Image from "next/image"
 import { useMemo, useState } from "react"
 import { generateDayTimeList } from "../helpers/hours"
-import { format } from "date-fns"
+import { format, setHours, setMinutes } from "date-fns"
+import { SaveBooking } from "./actions/saveBooking"
+import { Loader2 } from "lucide-react"
 
 type ServiceProps = {
   service: Service
   isAuthenticaded: boolean
   barbershop: Barbershop
 }
-const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => {
-  const [date, setDate] = useState<Date | undefined>()
-  const [selectedTime, setSelectedTime] = useState<string | null>(null)
 
+const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => {
+  const [date, setDate] = useState<Date>()
+  const [selectedTime, setSelectedTime] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const { data } = useSession()
+  
   const handleClickBooking = () => {
     if (!isAuthenticaded) return signIn('google')
+  }
 
-    // TODO - abrir modal de agendamento
+  const handleClickConfirm = async () => {
+    setIsLoading(true)
+    
+    try {
+      if(!selectedTime || date === undefined || data === null) return
+
+      const dateHour = Number(selectedTime.split(':')[0])
+      const dateMinutes = Number(selectedTime.split(':')[1])
+      const dateFormated = setMinutes(setHours(date, dateHour), dateMinutes)
+
+      await SaveBooking({
+        serviceId: service.id,
+        barbershopId: service.barbershopId,
+        date: dateFormated, //no prisma será salvo em UTC, GMT 0
+        userId: (data.user as any).id
+      })
+    }
+    catch (error) {
+      console.log(error)
+    }
+    finally {
+      setIsLoading(false)
+    }
   }
 
   const handleClickTime = (time: string) => setSelectedTime(time)
@@ -153,8 +181,10 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
                   </div>
 
                   <SheetFooter className="px-5">
-                    <Button disabled={selectedTime === null ? true : false}>
-                      Confirmar
+                    <Button onClick={() => handleClickConfirm()} disabled={(selectedTime === null || isLoading) ? true : false}>
+                      {isLoading 
+                        ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" /> && 'Agendando ...')
+                        : 'Confirmar Agendamento'}
                     </Button>
                   </SheetFooter>
                 </SheetContent>

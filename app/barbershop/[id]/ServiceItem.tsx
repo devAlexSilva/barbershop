@@ -13,6 +13,8 @@ import { generateDayTimeList } from "../helpers/hours"
 import { format, setHours, setMinutes } from "date-fns"
 import { SaveBooking } from "./actions/saveBooking"
 import { Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 type ServiceProps = {
   service: Service
@@ -24,17 +26,19 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
   const [date, setDate] = useState<Date>()
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [SheetIsOpen, setSheetIsOpen] = useState(false)
   const { data } = useSession()
-  
+  const router = useRouter()
+
   const handleClickBooking = () => {
     if (!isAuthenticaded) return signIn('google')
   }
 
   const handleClickConfirm = async () => {
     setIsLoading(true)
-    
+
     try {
-      if(!selectedTime || date === undefined || data === null) return
+      if (!selectedTime || date === undefined || data === null) return
 
       const dateHour = Number(selectedTime.split(':')[0])
       const dateMinutes = Number(selectedTime.split(':')[1])
@@ -45,6 +49,17 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
         barbershopId: service.barbershopId,
         date: dateFormated, //no prisma será salvo em UTC, GMT 0
         userId: (data.user as any).id
+      })
+
+      setSelectedTime(null)
+      setSheetIsOpen(false)
+
+      toast("Reserva criada com sucesso", {
+        description: format(dateFormated, "'Para' dd 'de' MMMM 'às' HH':'mm", {locale: ptBR}),
+        action: {
+          label: "Visualizar",
+          onClick: () => router.push('/booking'),
+        }
       })
     }
     catch (error) {
@@ -88,7 +103,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
               <p className="text-primary text-sm font-bold">
                 {formatCurrency(Number(service.price))}
               </p>
-              <Sheet>
+              <Sheet open={SheetIsOpen} onOpenChange={setSheetIsOpen}>
                 <SheetTrigger asChild>
                   <Button variant='secondary' onClick={handleClickBooking}>
                     Reservar
@@ -182,7 +197,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
 
                   <SheetFooter className="px-5">
                     <Button onClick={() => handleClickConfirm()} disabled={(selectedTime === null || isLoading) ? true : false}>
-                      {isLoading 
+                      {isLoading
                         ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" /> && 'Agendando ...')
                         : 'Confirmar Agendamento'}
                     </Button>

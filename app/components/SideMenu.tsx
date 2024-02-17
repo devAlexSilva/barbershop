@@ -65,7 +65,7 @@ const SideMenu = () => {
 
           {status === 'authenticated' && data.user ? (
             <Button variant='outline' className="justify-start" asChild>
-              <Link href='/bookings'>
+              <Link href='/booking'>
                 <CalendarIcon size={18} className="mr-2" />
                 Agendamentos
               </Link>

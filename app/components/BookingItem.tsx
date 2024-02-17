@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client"
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar"
 import { Badge } from "./ui/badge"
 import { Card, CardContent } from "./ui/card"
-import { format } from "date-fns"
+import { format, isPast } from "date-fns"
 import { ptBR } from "date-fns/locale/pt-BR"
 
 
@@ -12,16 +12,17 @@ export type BookingItemPropps = {
       service: true,
       barbershop: true
     }
-  }>,
-  status: string
+  }>
 }
 
-const BookingItem = ({ booking, status }: BookingItemPropps) => {
+const BookingItem = ({ booking }: BookingItemPropps) => {
+  const isFinished = isPast(booking.date)
+
   return (
-    <Card>
+    <Card className="min-w-[80%]">
       <CardContent className="flex px-0 py-0">
         <div className="flex flex-[3] flex-col gap-2 py-5 pl-5">
-          <Badge className="w-fit" variant={status === 'Confirmados' ? 'default' : 'secondary'}>{status}</Badge> {/*w-fit to restrict size div */}
+          <Badge className="w-fit" variant={isFinished ? 'secondary' : 'default'}>{isFinished ? 'Finalizado' : 'Confirmado'}</Badge> {/*w-fit to restrict size div */}
           <h2 className="font-bold">{booking.service.name}</h2>
 
           <div className="flex items-center gap-2">

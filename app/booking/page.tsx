@@ -3,34 +3,54 @@ import Header from "../components/Header"
 import { authOptions } from "../api/auth/[...nextauth]/route"
 import { redirect } from "next/navigation"
 import { db } from "../lib/prisma"
-import BookingItem, { BookingItemPropps } from "../components/BookingItem"
-import { Booking } from "@prisma/client"
-import { isFuture, isPast } from "date-fns"
+import BookingItem from "../components/BookingItem"
+
 
 const booking = async () => {
   const session = await getServerSession(authOptions)
 
   if (!session) return redirect('/')
 
-  const bookings = await db.booking.findMany({
-    where: {
-      userId: (session.user as any).id
-    },
-    include: {
-      service: true,
-      barbershop: true
-    }
-  })
+  /**option 1 to filter status, doing it in DB is the best choice because the memory consumption in server is lower*/
+  const [confirmed, finished] = await Promise.all([
+    db.booking.findMany({
+      where: {
+        userId: (session.user as any).id,
+        date: {
+          gte: new Date()
+        }
+      },
+      include: {
+        service: true,
+        barbershop: true
+      }
+    }),
 
+    db.booking.findMany({
+      where: {
+        userId: (session.user as any).id,
+        date: {
+          lt: new Date()
+        }
+      },
+      include: {
+        service: true,
+        barbershop: true
+      }
+    })
+  ])
 
+  /**opção 2 */
   // let confirmed = []
   // let finished = []
 
   // bookings.filter(booking => {
   //   return booking.date < new Date() ? finished.push(booking) : confirmed.push(booking)
   // })
-  const confirmed = bookings.filter(booking => isFuture(booking.date))
-  const finished = bookings.filter(booking => isPast(booking.date))
+
+  /**opção 3 */
+  // const confirmed = bookings.filter(booking => isFuture(booking.date))
+  // const finished = bookings.filter(booking => isPast(booking.date))
 
   return (
     <div>
@@ -41,12 +61,12 @@ const booking = async () => {
 
         <h2 className="text-gray-400 font-bold text-sm uppercase mt-6 mb-3">Confirmados</h2>
         <div className="flex flex-col gap-3">
-          {confirmed.map(booking => <BookingItem key={booking.id} booking={booking} status='Confirmados' />)}
+          {confirmed.map(booking => <BookingItem key={booking.id} booking={booking} />)}
         </div>
 
         <h2 className="text-gray-400 font-bold text-sm uppercase mt-6 mb-3">Finalizados</h2>
         <div className="flex flex-col gap-3">
-          {finished.map(booking => <BookingItem key={booking.id} booking={booking} status='Finalizados' />)}
+          {finished.map(booking => <BookingItem key={booking.id} booking={booking} />)}
         </div>
       </div>
     </div>

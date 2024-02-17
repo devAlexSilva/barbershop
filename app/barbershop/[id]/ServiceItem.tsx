@@ -83,7 +83,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
 
       await SaveBooking({
         serviceId: service.id,
-        barbershopId: service.barbershopId,
+        barbershopId: barbershop.id,
         date: dateFormated, //no prisma será salvo em UTC, GMT 0
         userId: (data.user as any).id
       })
@@ -105,6 +105,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
     finally {
       setIsLoading(false)
       setSelectedTime(null)
+      setDate(undefined)
     }
   }
 
@@ -112,11 +113,11 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
     if (!date) return
 
     (async () => {
-      const bookingDays = await GetBookingDays(date)
+      const bookingDays = await GetBookingDays(barbershop.id, service.id, date)
       setAvailableTime(bookingDays)
     })()
 
-  }, [date])
+  }, [date, service.id, barbershop.id])
 
   return (
     <Card>
@@ -133,7 +134,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
           </div>
 
           <div className="flex flex-col">
-            <h2 className="font-bold text-sm">{availableTime[0]?.date.toString()}</h2>
+            <h2 className="font-bold text-sm">{service.name}</h2>
             <p className="text-sm text-gray-400">{service.description}</p>
 
             <div className="flex items-center justify-between mt-4">

@@ -4,17 +4,18 @@ import { Button } from "@/app/components/ui/button"
 import { Calendar } from "@/app/components/ui/calendar"
 import { Card, CardContent } from "@/app/components/ui/card"
 import { Sheet, SheetContent, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/app/components/ui/sheet"
-import { Barbershop, Service } from "@prisma/client"
+import { Barbershop, Booking, Service } from "@prisma/client"
 import { ptBR } from "date-fns/locale/pt-BR"
 import { signIn, useSession } from "next-auth/react"
 import Image from "next/image"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { generateDayTimeList } from "../helpers/hours"
 import { format, setHours, setMinutes } from "date-fns"
 import { SaveBooking } from "./actions/saveBooking"
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { GetBookingDays } from "./actions/getBookingDays"
 
 type ServiceProps = {
   service: Service
@@ -27,12 +28,48 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [SheetIsOpen, setSheetIsOpen] = useState(false)
+  const [availableTime, setAvailableTime] = useState<Booking[]>([])
   const { data } = useSession()
   const router = useRouter()
+
+
+  const formatCurrency = (price: number) => Intl
+    .NumberFormat('pt-Br', { style: 'currency', currency: 'BRL' })
+    .format(price)
 
   const handleClickBooking = () => {
     if (!isAuthenticaded) return signIn('google')
   }
+
+  const handleClickTime = (time: string) => setSelectedTime(time)
+
+  const timeList = useMemo(() => {
+    setSelectedTime(null)
+    if (!date) return [];
+
+    // (async() => {
+    //   const bookingDays = await GetBookingDays(date)
+    //   setAvailableTime(bookingDays)
+    // })()
+
+    return generateDayTimeList(date).filter(time => {
+      //remove 'time' where 'time' is equal to time in especific date on availableTime
+      //time = '09:45'
+      const timeHour = Number(time.split(':')[0])
+      const timeMinutes = Number(time.split(':')[1])
+      //const dateFormated = setMinutes(setHours(date, dateHour), dateMinutes)
+
+      const booking = availableTime.find(booking => {
+        const bookingHour = booking.date.getHours()
+        const bookingMinutes = booking.date.getMinutes()
+
+        return bookingHour === timeHour && bookingMinutes === timeMinutes
+      })
+
+      return !booking
+
+    })
+  }, [date, availableTime])
 
   const handleClickConfirm = async () => {
     setIsLoading(true)
@@ -55,7 +92,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
       setSheetIsOpen(false)
 
       toast("Reserva criada com sucesso", {
-        description: format(dateFormated, "'Para' dd 'de' MMMM 'às' HH':'mm", {locale: ptBR}),
+        description: format(dateFormated, "'Para' dd 'de' MMMM 'às' HH':'mm", { locale: ptBR }),
         action: {
           label: "Visualizar",
           onClick: () => router.push('/booking'),
@@ -67,19 +104,19 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
     }
     finally {
       setIsLoading(false)
+      setSelectedTime(null)
     }
   }
 
-  const handleClickTime = (time: string) => setSelectedTime(time)
+  useEffect(() => {
+    if (!date) return
 
-  const timeList = useMemo(() => {
-    date && setSelectedTime(null)
-    return date ? generateDayTimeList(date) : []
+    (async () => {
+      const bookingDays = await GetBookingDays(date)
+      setAvailableTime(bookingDays)
+    })()
 
   }, [date])
-
-  const formatCurrency = (price: number) => Intl.NumberFormat('pt-Br', { style: 'currency', currency: 'BRL' })
-    .format(price)
 
   return (
     <Card>
@@ -96,7 +133,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
           </div>
 
           <div className="flex flex-col">
-            <h2 className="font-bold text-sm">{service.name}</h2>
+            <h2 className="font-bold text-sm">{availableTime[0]?.date.toString()}</h2>
             <p className="text-sm text-gray-400">{service.description}</p>
 
             <div className="flex items-center justify-between mt-4">

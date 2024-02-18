@@ -14,6 +14,7 @@ import { CancelBooking } from "../actions/cancelBookings"
 import { toast } from "sonner"
 import { useEffect, useState } from "react"
 import { Loader2 } from "lucide-react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog"
 
 
 export type BookingItemPropps = {
@@ -135,17 +136,46 @@ const BookingItem = ({ booking }: BookingItemPropps) => {
           <SheetClose asChild>
             <Button className="w-full" variant='secondary'>Voltar</Button>
           </SheetClose>
-          <Button
-            onClick={handleCancelBooking}
-            disabled={isFinished || isLoading}
-            className="w-full" variant='destructive'
-          >
-            {
-              isLoading
-                ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" /> && '...')
-                : 'Cancelar Reserva'
-            }
-          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                disabled={isFinished || isLoading}
+                className="w-full" variant='destructive'
+              >
+                {
+                  isLoading
+                    ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" /> && '...')
+                    : 'Cancelar Reserva'
+                }
+              </Button>
+            </AlertDialogTrigger>
+
+            <AlertDialogContent className="w-[90%]">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Cancelar Reserva?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Uma vez confirmada<br />
+                  essa ação não poderá ser desfeita.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <AlertDialogFooter className="flex flex-row gap-4">
+                <AlertDialogCancel className="w-full mt-0">
+                  Voltar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className="w-full"
+                  onClick={handleCancelBooking}
+                  disabled={isFinished || isLoading}
+                >
+                  Confirmar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+
+            </AlertDialogContent>
+          </AlertDialog>
+
         </SheetFooter>
       </SheetContent>
     </Sheet>

@@ -2,7 +2,7 @@ import { db } from "@/app/lib/prisma"
 import BarbershopInfo from "./BarbershopInfo"
 import ServiceItem from "./ServiceItem"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/app/lib/auth"
 
 
 type BarbershopProps = {
@@ -20,7 +20,7 @@ const BarbershopDetailsPage = async ({ params }: BarbershopProps) => {
   })
 
   if (!barbershop) return //todo - show other component when not found barbershop
-  
+
   const session = await getServerSession(authOptions)
   const isAuthenticaded = !!session
 

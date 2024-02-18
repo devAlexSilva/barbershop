@@ -58,16 +58,22 @@ const booking = async () => {
 
       <div className="px-5 py-6">
         <h1 className="font-bold text-xl">Agendamentos</h1>
-
-        <h2 className="text-gray-400 font-bold text-sm uppercase mt-6 mb-3">Confirmados</h2>
-        <div className="flex flex-col gap-3">
-          {confirmed.map(booking => <BookingItem key={booking.id} booking={booking} />)}
-        </div>
-
-        <h2 className="text-gray-400 font-bold text-sm uppercase mt-6 mb-3">Finalizados</h2>
-        <div className="flex flex-col gap-3">
-          {finished.map(booking => <BookingItem key={booking.id} booking={booking} />)}
-        </div>
+        {confirmed[0] &&
+          <>
+            <h2 className="text-gray-400 font-bold text-sm uppercase mt-6 mb-3">Confirmados</h2>
+            <div className="flex flex-col gap-3">
+              {confirmed.map(booking => <BookingItem key={booking.id} booking={booking} />)}
+            </div>
+          </>
+        }
+        {finished[0] &&
+          <>
+            <h2 className="text-gray-400 font-bold text-sm uppercase mt-6 mb-3">Finalizados</h2>
+            <div className="flex flex-col gap-3">
+              {finished.map(booking => <BookingItem key={booking.id} booking={booking} />)}
+            </div>
+          </>
+        }
       </div>
     </div>
   )

@@ -16,6 +16,7 @@ import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import { GetBookingDays } from "./actions/getBookingDays"
+import { formatCurrency } from "@/app/lib/utils"
 
 type ServiceProps = {
   service: Service
@@ -33,10 +34,7 @@ const ServiceItem = ({ service, isAuthenticaded, barbershop }: ServiceProps) => 
   const router = useRouter()
 
 
-  const formatCurrency = (price: number) => Intl
-    .NumberFormat('pt-Br', { style: 'currency', currency: 'BRL' })
-    .format(price)
-
+  
   const handleClickBooking = () => {
     if (!isAuthenticaded) return signIn('google')
   }
